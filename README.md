@@ -1,45 +1,4 @@
-.  Navigating an inventory as if with a mouse would be tricky.  I think the most realistic option is to just start from the first inventory item and cycle through the list of items.  Maybe shortcuts can be added later (jump to top, jump to bottom, etc.).  Supporting multiple menus would also require keybinds for cycling those menus
-
-#### Idea: context-dependent inputs
-There would not be a need for separate inputs for inventory vs. menu if `pyd_pyper.py` knew if an inventory or a menu were opened.  This would make the eventual keybinds more intuitive as there would not be separate notes for each context.
- ntory/Menu Nav** |
-| tons cannot be bound to the same string.  There are no exclusions for inventory/menu because these inputs generally only happen one at a time anyways.  In the cases of games that do not disable movement in a menu, for simplicity we can just override the movement notes when in a  menu.  This has the effect of pausing movement without pausing gameplay, which may be annoying, but I'd rather work with this limitation than needing to bind separate keys.
-
-###apping (bass only [for now])
-| 0              | 1                 | 2                | 3              |
-| -------------- | ----------------- | ---------------- | -------------- |
-| Open inventory | Open menu         | Use/Interact     |                |
-| Jump to back   | Previous in queue | Next in queue    | Jump to front  |
-| Primary Attack | Special Attack    | Secondary Attack | Dash/roll      |
-| Forward-Left   | Forward-Right     | Backward-Left    | Backward-Right |
-| Forward        | Left              | Right            | Backward       |# 5-String Bass Fretboard (frets 0-4)
-| 0   | 1    | 2    | 3    | 4    |
-| --- | ---- | ---- | ---- | ---- |
-| G2  | \#/b | A2   | \#/b | B2   |
-| D2  | \#/b | E2   | F2   | \#/b |
-| A1  | \#/b | B1   | C2   | \#/b |
-| E1  | F1   | \#/b | G1   | \#/b |
-| B0  | C1   | \#/b | D1   | \#/b |
-
-
-#### Prototype keym------------------- | ----------------- | ---------------------- |
-| Forward             | Primary attack    | Next in queue          |
-| Backward            | Secondary attack  | Previous in queue      |
-| Left                | Special attack    | Jump to front          |
-| Right               | Dash/Roll         | Jump to back           |
-| Forward-Right       | X                 | Open inventory         |
-| Forward-Left        | X                 | Open menu              |
-| Backward-Right      | X                 | Use/Interact           |
-| Backward-Left       | X                 | X                      |
-
-#### Exclusions
-In general, all movement inputs exclude all attack movements, and vice versa.  Meaning, movement and attack but
-#### Table of common inputs
-These are the typical inputs of video games (at least, the ones that I play)
-
-| **Movement Inputs** | **Attack Inputs** | **Invepping ends up being used, two inputs like, for example, "Move forward + Attack" can **not** be on the same string, otherwise you would only be able to do one or the other.  It should be noted though, that the specific limitations imposed by the instrument depends on the kind of instrument you are playing.  Relatively speaking, string instruments have it easy because there is the possibility of simultaneous notes at all (because of having multiple strings).
-
-It would be helpful to have a table of inputs that likely would mutually exclude each other in this way.  This depends on the game being played however, as the game dictates what kind of inputs often happen simultaneously.  Generally, though movement happens simultaneously with other inputs (except menus)#### TODO List:
+#### TODO List:
 - **pyd_pyper.py**
 	- FIX PITCH DETECTION
 	- Use dictionary of (supported) instrument ranges to set for YIN fmin fmax
@@ -78,4 +37,45 @@ Because of the nature of playing a string instrument, certain combinations of in
 
 > **Inputs that are frequently made simultaneously cannot be on the same string**
 
-So, whatever ma
+So, whatever mapping ends up being used, two inputs like, for example, "Move forward + Attack" can **not** be on the same string, otherwise you would only be able to do one or the other.  It should be noted though, that the specific limitations imposed by the instrument depends on the kind of instrument you are playing.  Relatively speaking, string instruments have it easy because there is the possibility of simultaneous notes at all (because of having multiple strings).
+
+It would be helpful to have a table of inputs that likely would mutually exclude each other in this way.  This depends on the game being played however, as the game dictates what kind of inputs often happen simultaneously.  Generally, though movement happens simultaneously with other inputs (except menus).  Navigating an inventory as if with a mouse would be tricky.  I think the most realistic option is to just start from the first inventory item and cycle through the list of items.  Maybe shortcuts can be added later (jump to top, jump to bottom, etc.).  Supporting multiple menus would also require keybinds for cycling those menus
+
+#### Idea: context-dependent inputs
+There would not be a need for separate inputs for inventory vs. menu if `pyd_pyper.py` knew if an inventory or a menu were opened.  This would make the eventual keybinds more intuitive as there would not be separate notes for each context.
+
+#### Table of common inputs
+These are the typical inputs of video games (at least, the ones that I play)
+
+| **Movement Inputs** | **Attack Inputs** | **Inventory/Menu Nav** |
+| ------------------- | ----------------- | ---------------------- |
+| Forward             | Primary attack    | Next in queue          |
+| Backward            | Secondary attack  | Previous in queue      |
+| Left                | Special attack    | Jump to front          |
+| Right               | Dash/Roll         | Jump to back           |
+| Forward-Right       | X                 | Open inventory         |
+| Forward-Left        | X                 | Open menu              |
+| Backward-Right      | X                 | Use/Interact           |
+| Backward-Left       | X                 | X                      |
+
+#### Exclusions
+In general, all movement inputs exclude all attack movements, and vice versa.  Meaning, movement and attack buttons cannot be bound to the same string.  There are no exclusions for inventory/menu because these inputs generally only happen one at a time anyways.  In the cases of games that do not disable movement in a menu, for simplicity we can just override the movement notes when in a  menu.  This has the effect of pausing movement without pausing gameplay, which may be annoying, but I'd rather work with this limitation than needing to bind separate keys.
+
+#### 5-String Bass Fretboard (frets 0-4)
+| 0   | 1    | 2    | 3    | 4    |
+| --- | ---- | ---- | ---- | ---- |
+| G2  | \#/b | A2   | \#/b | B2   |
+| D2  | \#/b | E2   | F2   | \#/b |
+| A1  | \#/b | B1   | C2   | \#/b |
+| E1  | F1   | \#/b | G1   | \#/b |
+| B0  | C1   | \#/b | D1   | \#/b |
+
+
+#### Prototype keymapping (bass only [for now])
+| 0              | 1                 | 2                | 3              |
+| -------------- | ----------------- | ---------------- | -------------- |
+| Open inventory | Open menu         | Use/Interact     |                |
+| Jump to back   | Previous in queue | Next in queue    | Jump to front  |
+| Primary Attack | Special Attack    | Secondary Attack | Dash/roll      |
+| Forward-Left   | Forward-Right     | Backward-Left    | Backward-Right |
+| Forward        | Left              | Right            | Backward       |
