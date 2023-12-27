@@ -1,0 +1,7 @@
+*.wav
+*.pdf
+pyaudio_example.py
+validation.py
+__pycache__
+.DS_Store
+instruments
