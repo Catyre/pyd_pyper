@@ -38,8 +38,8 @@ In theory, **Pyd Pyper** is OS agnostic, though this has yet to be completely te
 | ------------------- | --------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | --input [input]     | -i        | Set the desired input device to [input].  If omitted, use the computer's default device as input | Optional                                                                           |
 | --list              | -l        | List the available input devices at the time of running this program.                            | Optional. This flag will exit the program after printing the devices               |
-| --inst [instrument] | N/A       | Set the desired instrument to read keymaps from                                                  | Can have a user-defined default.  If there is a default set, this flag is optional |
-| --keymap [keymap]   | N/A       | Use [keymap] (found in `.../pyd_pyper/instruments/[instrument]/keymaps`)                         | Optional.  Keymaps can also have user-defined defaults pet-instrument              |
+| --inst [instrument] | N/A       | Set the desired instrument ([instrument]) to read keymaps from                                   | Can have a user-defined default.  If there is a default set, this flag is optional |
+| --keymap [keymap]   | N/A       | Use [keymap] (found in `.../pyd_pyper/instruments/[instrument]/keymaps`)                         | Optional.  Keymaps can also have user-defined defaults per-instrument              |
 
 There will be many more flags added for further customizability as time goes on.
 
@@ -58,7 +58,7 @@ There are the third party python libraries that allow this project to happen:
 ## Considerations:
 - At least initially, the game to be tested with should have simple controls (I'm thinking Hollow Knight or Hades.  Minecraft may also be viable)
 - Eventually, there should be a streamlined method of associating notes with an arbitrary (user-decided) keyboard input
-- Should work regardless of timbre/tone.  That is, any instrument should be able to work with this program.
+- Because of how pitch detection is implemented, this should work regardless of timbre/tone.  That is, any instrument should be able to work with this program.
 - For presenting the final product, I need to be able to record through my screen and my webcam simultaneously so people can more clearly see how I'm playing the game through the bass.  Recording bass audio alongside game audio is already trivial in OBS
 
 <hr>
@@ -70,7 +70,7 @@ Because of the nature of playing a string instrument, certain combinations of in
 
 So, whatever mapping ends up being used, two exclusive inputs  (for example, `Forward` + `Attack`) can **not** be on the same string, otherwise you would only be able to do one or the other.  It should be noted though, that the specific limitations imposed by the instrument depends on the kind of instrument you are playing.  Relatively speaking, string instruments have it easy because there is the possibility of simultaneous notes at all (because of having multiple strings).
 
-It would be helpful to have a table of inputs that likely would mutually exclude each other in this way.  This depends on the game being played however, as the game dictates what kind of inputs often happen simultaneously.  Generally, though movement happens simultaneously with other inputs (except menus).  Navigating an inventory as if with a mouse would be tricky.  I think the most realistic option is to just start from the first inventory item and cycle through the list of items.  Maybe shortcuts can be added later (jump to top, jump to bottom, etc.).  Supporting multiple menus would also require keybinds for cycling those menus
+It would be helpful to have a table of inputs that would mutually exclude each other in this way.  This depends on the game being played however, as the game dictates what kind of inputs often happen simultaneously.  Generally, though movement happens simultaneously with other inputs (except menus).  Navigating an inventory as if with a mouse would be tricky.  I think the most realistic option is to just start from the first inventory item and cycle through the list of items.  Maybe shortcuts can be added later (jump to top, jump to bottom, etc.).  Supporting multiple menus would also require keybinds for cycling those menus
 
 <hr>
 
