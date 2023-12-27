@@ -23,9 +23,8 @@ class Instrument:
 
 
     def __eq__(self, other):
-        if self.name == other.name:
-            if [x for x in self.keymaps] == [x for x in other.keymaps]:
-                return True
+        if self.name == other.name and [x for x in self.keymaps] == [x for x in other.keymaps]:
+            return True
 
 
     def get_instruments(self):
