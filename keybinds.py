@@ -40,3 +40,6 @@ class Keybind:
             self.name = name
         
         self.keybind = binding
+
+    def __getitem__(self, key):
+        return self.keybind[key]

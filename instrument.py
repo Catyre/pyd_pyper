@@ -11,18 +11,20 @@ class Instrument:
         self.notemaps = {}
         self.name = name
         self.path = os.path.join(os.getcwd(), "instruments", name) # .../pyd_pyper/instruments/[name]
+        self.note_range = note_range
 
         # Check the instrument's folder for existing notemaps and keybinds
         self.games = [x for x in os.listdir(self.path) if not x.startswith('.')] # List of all games
         if len(self.games) > 0:
             for game in self.games:
+                self.notemaps[game] = {}
                 game_dir = os.path.join(self.path, game)
                 for notemap in os.listdir(game_dir):
                     if not notemap.startswith('.'):
                         try:
                             with open(os.path.join(game_dir, notemap, 'notemap.json'), 'r') as f:
                                 data = json.load(f)
-                                self.notemaps[game] = nm.NoteMap(note_range=note_range, name=notemap, mapping=data['notemap'], game=game, default=data['default'], instr=self)
+                                self.notemaps[game][notemap] = nm.NoteMap(note_range=note_range, name=notemap, mapping=data['notemap'], game=game, default=data['default'], instr=self)
                         except FileNotFoundError:
                             print(f"Could not find notemap.json in folder \"{os.path.join(game_dir, notemap)}\"")
         else:

@@ -153,7 +153,7 @@ class NoteMap:
         else:
             raise valid[1]
 
-        self.notemap = mapping
+        self.mapping = mapping
         self.game = game
         self.default = default
         self.instr = instr
@@ -165,7 +165,8 @@ class NoteMap:
             with open(os.path.join(keybind_dir, config), 'r') as f:
                 data = json.load(f)
                 if data['type'] == 'keybind':
-                    self.keybinds[game] = kb.Keybind(binding=data['keybinds'], name=config, default=data['default'])
+                    # TODO: Verufy keybind validity before adding it to dict
+                    self.keybinds[config.split('.')[0]] = kb.Keybind(binding=data['keybinds'], name=config, default=data['default'])
 
         if not self.keybinds:
             raise ValueError(f"No keybinds found in folder \"{game_dir}\"")
