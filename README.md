@@ -32,14 +32,14 @@ For **Pyd Pyper** to be able to function, there has to be a way for the sounds y
 In theory, **Pyd Pyper** is OS agnostic, though this has yet to be completely tested.
 
 #### Running the program:
-**Pyd Pyper** is activated and configured primarily through the command line with a variety of flags.  The configs for individual instruments and their respective keymaps can be opened in your OS's default text editor from the command line.  They are also stored as plain text in `.../pyd_pyper/instruments/[instrument]/keymaps`, so the command line is not necessary to update them.  The help flag (`python pyd_pyper.py -h` or `python pyd_pyper.py --help`) will also list these options:
+**Pyd Pyper** is activated and configured primarily through the command line with a variety of flags.  The configs for individual instruments and their respective keymaps can be opened in your OS's default text editor from the command line by passing `-e`  or `--edit` to `pyd_pyper.py`.  The keymaps are also stored as plain text in `.../pyd_pyper/instruments/[instrument]/keymaps`, so the command line is not necessary to edit them.  The help flag (`python pyd_pyper.py -h` or `python pyd_pyper.py --help`) will also list these options:
 
-| Flag                | Shorthand | Description                                                                                      | Notes                                                                              |
-| ------------------- | --------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| --input [input]     | -i        | Set the desired input device to [input].  If omitted, use the computer's default device as input | Optional                                                                           |
-| --list              | -l        | List the available input devices at the time of running this program.                            | Optional. This flag will exit the program after printing the devices               |
-| --inst [instrument] | N/A       | Set the desired instrument ([instrument]) to read keymaps from                                   | Can have a user-defined default.  If there is a default set, this flag is optional |
-| --keymap [keymap]   | N/A       | Use [keymap] (found in `.../pyd_pyper/instruments/[instrument]/keymaps`)                         | Optional.  Keymaps can also have user-defined defaults per-instrument              |
+| Flag                | Shorthand | Description                                                                                          | Notes                                                                              |
+| ------------------- | --------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| --input [input]     | -i        | Set the desired input device to [input].  <br>If omitted, use the computer's default device as input | Optional                                                                           |
+| --list              | -l        | List the available input devices at the time of running this program.                                | Optional. This flag will exit the program after printing the devices               |
+| --inst [instrument] | N/A       | Set the desired instrument to read keymaps from                                                      | Can have a user-defined default.  If there is a default set, this flag is optional |
+| --keymap [keymap]   | N/A       | Use [keymap] (found in <br>`.../pyd_pyper/instruments/[instrument]/keymaps/[keymap]`)                | Optional.  Keymaps can also have user-defined defaults per-instrument              |
 
 There will be many more flags added for further customizability as time goes on.
 
@@ -48,7 +48,7 @@ There will be many more flags added for further customizability as time goes on.
 <hr>
 
 ## Project Ingredients:
-There are the third party python libraries that allow this project to happen:
+These are the third party python libraries that allow this project to happen:
 - [Pynput for keyboard manipulation](https://pypi.org/project/pynput/)
 - [Librosa for audio processing](https://pypi.org/project/librosa/)
 - [PyAudio for inputting realtime audio data](https://pypi.org/project/PyAudio/)
@@ -58,7 +58,7 @@ There are the third party python libraries that allow this project to happen:
 ## Considerations:
 - At least initially, the game to be tested with should have simple controls (I'm thinking Hollow Knight or Hades.  Minecraft may also be viable)
 - Eventually, there should be a streamlined method of associating notes with an arbitrary (user-decided) keyboard input
-- Because of how pitch detection is implemented, this should work regardless of timbre/tone.  That is, any instrument should be able to work with this program.
+- Should work regardless of timbre/tone.  That is, any instrument should be able to work with this program.
 - For presenting the final product, I need to be able to record through my screen and my webcam simultaneously so people can more clearly see how I'm playing the game through the bass.  Recording bass audio alongside game audio is already trivial in OBS
 
 <hr>
@@ -70,7 +70,7 @@ Because of the nature of playing a string instrument, certain combinations of in
 
 So, whatever mapping ends up being used, two exclusive inputs  (for example, `Forward` + `Attack`) can **not** be on the same string, otherwise you would only be able to do one or the other.  It should be noted though, that the specific limitations imposed by the instrument depends on the kind of instrument you are playing.  Relatively speaking, string instruments have it easy because there is the possibility of simultaneous notes at all (because of having multiple strings).
 
-It would be helpful to have a table of inputs that would mutually exclude each other in this way.  This depends on the game being played however, as the game dictates what kind of inputs often happen simultaneously.  Generally, though movement happens simultaneously with other inputs (except menus).  Navigating an inventory as if with a mouse would be tricky.  I think the most realistic option is to just start from the first inventory item and cycle through the list of items.  Maybe shortcuts can be added later (jump to top, jump to bottom, etc.).  Supporting multiple menus would also require keybinds for cycling those menus
+It would be helpful to have a table of inputs that likely would mutually exclude each other in this way.  This depends on the game being played however, as the game dictates what kind of inputs often happen simultaneously.  Generally, though movement happens simultaneously with other inputs (except menus).  Navigating an inventory as if with a mouse would be tricky.  I think the most realistic option is to just start from the first inventory item and cycle through the list of items.  Maybe shortcuts can be added later (jump to top, jump to bottom, etc.).  Supporting multiple menus would also require keybinds for cycling those menus
 
 <hr>
 
@@ -110,7 +110,7 @@ Keymaps are simply key:value pairs of a note and a desired actrion (**NOT** a ke
 ...
 B3:forward
 A#3:use
-Cb2:dash
+Db2:dash
 ...
 ```
 Eventually, I would like to add the ability to create custom actions for niche game environments, but for now a default set of actions should suffice.

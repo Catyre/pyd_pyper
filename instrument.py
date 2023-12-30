@@ -1,17 +1,34 @@
 import os
-import keymap as km
+import notemap as nm
+import keybinds as kb
+import json
 
-# Class to represent an instrument, which contains data about the keymap(s), ranges, and other instrument-specific data
+# Class to represent an instrument, which contains data about the notemap(s), ranges, and other instrument-specific data
 class Instrument:
-    all_instruments = [] # List of all instruments
+    all_instruments = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments"))] # List of all instruments
 
-    def __init__(self, name="", note_range=["A0", "C8"], path=os.getcwd()):
+    def __init__(self, name, note_range=["A0", "C8"]):
+        self.notemaps = {}
         self.name = name
-        self.path = os.path.join(path, "instruments", name) # .../pyd_pyper/instruments/[name]
-        self.default_keymap = km.KeyMap(path=os.path.join(self.path, "keymaps"), note_range=note_range) # path=.../pyd_pyper/instruments/[name]/keymaps
-        # Keymaps should be added if there are any in the directory
-        self.keymaps = [self.default_keymap]
-        all_instruments.append(self)
+        self.path = os.path.join(os.getcwd(), "instruments", name) # .../pyd_pyper/instruments/[name]
+
+        # Check the instrument's folder for existing notemaps and keybinds
+        self.games = [x for x in os.listdir(self.path) if not x.startswith('.')] # List of all games
+        if len(self.games) > 0:
+            for game in self.games:
+                game_dir = os.path.join(self.path, game)
+                for notemap in os.listdir(game_dir):
+                    if not notemap.startswith('.'):
+                        try:
+                            with open(os.path.join(game_dir, notemap, 'notemap.json'), 'r') as f:
+                                data = json.load(f)
+                                self.notemaps[game] = nm.NoteMap(note_range=note_range, name=notemap, mapping=data['notemap'], game=game, default=data['default'], instr=self)
+                        except FileNotFoundError:
+                            print(f"Could not find notemap.json in folder \"{os.path.join(game_dir, notemap)}\"")
+        else:
+            raise ValueError(f"No games found in folder \"{self.path}\"")
+
+        Instrument.all_instruments.append(self)
 
 
     def __str__(self):
@@ -23,46 +40,8 @@ class Instrument:
 
 
     def __eq__(self, other):
-        if self.name == other.name and [x for x in self.keymaps] == [x for x in other.keymaps]:
-            return True
+        return self.name == other.name and [x for x in self.notemaps] == [x for x in other.notemaps]
 
 
     def get_instruments(self):
-        return instruments
-
-
-    def add_keymap(self, keymap):
-        """
-        Adds a keymap to this instrument.
-        """
-
-        if isinstance(keymap, km.KeyMap):
-            self.keymaps.append(keymap)
-        else:
-            raise TypeError('variable \'keymap\' must be of type KeyMap')
-
-
-    def remove_keymap(self, keymap):
-        """
-        Removes a keymap from this instrument.
-        """
-
-        if keymap in self.keymaps:
-            self.keymaps.remove(keymap)
-        else:
-            raise ValueError('variable \'keymap\' must be a keymap of this instrument')
-
-
-    def set_default_keymap(self, keymap):
-        """
-        Sets the default keymap for this instrument.  
-        If the given keymap is not already in the list of keymaps, it will be added.
-        """
-
-        if keymap in self.keymaps:
-            self.default_keymap = keymap
-        elif isinstance(keymap, km.KeyMap):
-            self.keymaps.append(keymap)
-            self.default_keymap = keymap
-        else:
-            raise TypeError('variable \'keymap\' must be of type KeyMap')
+        return Instrument.all_instruments

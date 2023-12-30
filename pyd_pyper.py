@@ -2,10 +2,26 @@ import pyaudio, librosa
 import numpy as np
 import time
 import argparse
-import sys
+import sys, os, glob
 import keybinds as kb
-import instruments as inst
-import keymap as km
+import instrument
+import notemap as nm
+
+def list_options(options):
+    selection = None
+    choices = "\n"
+
+    if len(options) > 1:
+        for idx, option in enumerate(options): choices += f"    {idx}. {option}\n"
+        while selection not in range(len(options)):
+            selection = int(input(f"\nOptions (\"*[option]\" = default):{choices}Choose one number: "))
+    elif len(options) == 1:
+        selection = 0
+    else:
+        print("No selections found.  Exiting...")
+        sys.exit()
+
+    return options[selection]
 
 #Convert PCM signal to floating point with a range from -1 to 1. Use dtype='float32' for single precision.
 def pcm2float(sig, dtype='float32'):
@@ -65,78 +81,67 @@ def callback(in_data, frame_count, time_info, status):
 
 
 if __name__ == "__main__":
-    # Instantiate PyAudio and initialize PortAudio system resources
-    p = pyaudio.PyAudio()
-    numdev = p.get_host_api_info_by_index(0).get('deviceCount')
-    dummy_inst = inst.Instrument("dummy", ['A0', 'C8'])
-    curr_inst_choices = dummy_inst.get_instruments()
-
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description='Make keybinds for analog instruments.')
-    parser.add_argument('-i', '--input', dest='input_device', default=p.get_default_input_device_info().get('name'),
-                        help='Set the desired input device.  If not used, the system\'s default input device will be used.')
-    parser.add_argument('-l', '--list', action='store_true',
-                        help='List the available input devices at the time of running this program.  If used, the program will exit after displaying the list of input devices.')
-    parser.add_argument('--inst', dest='instrument', choices=['bass'],
-                        help='Set the desired instrument to use.')
-    args = parser.parse_args()
-
-    # List the available input devices if the -l flag is used.  This will also exit the program.
-    if args.list:
-        for i in range(numdev):
-            print("Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'))
-
-        sys.exit()
-
-    #
-
-    # Change this variable to the name of your desired input device
-    input_device = args.input
-    found_device = False
-
-    #pitches = None
-    #audio = None
-    #geo_mean = None
-
     global unique_note_count
     CHUNK = 1024
     FORMAT = pyaudio.paInt16 # .wav format dtype
     PREC_LIMIT = 1e-8
 
+    # Instantiate PyAudio and initialize PortAudio system resources
+    p = pyaudio.PyAudio()
+
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Make keybinds for analog instruments.')
+    parser.add_argument('-i', '--input', default=None, help='Set the desired input device.')
+    parser.add_argument('--instr', default=None, help='Set the desired instrument to use.')
+    parser.add_argument('-g', '--game', default=None, help='Set the desired game to use notemaps for.')
+    parser.add_argument('-n', '--notemap', default=None, help='Set the desired notemap.')
+    parser.add_argument('-k', '--keybind', default=None, help='Set the desired keybind for the given notemap.')
+
+    args = parser.parse_args()
+
+    input_device = args.input
+    instr = args.instr
+    game = args.game
+    notemap = args.notemap
+    keybind = args.keybind
+
+    # TODO: Prompt user to make these files if none are found
+    if input_device is None:
+        device_choices = [p.get_device_info_by_host_api_device_index(0, i).get('name') for i in range(p.get_host_api_info_by_index(0).get('deviceCount'))]
+        print('What input device would you like to use?')
+        input_device = list_options(poss_choices)
+    if instr is None:
+        poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments")) if not  x.startswith('.')]
+        print('\nWhat instrument configuration would you like to use?')
+        instr = list_options(poss_choices)
+    if game is None:
+        poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr)) if not  x.startswith('.')]
+        print('\nWhat game would you like to use Pyd Pyper for?')
+        game = list_options(poss_choices)
+    if notemap is None:
+        poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr, game)) if not  x.startswith('.')]
+        print(f'\nWhat notemap would you lke to use for {game}?')
+        notemap = list_options(poss_choices)
+    if keybind is None:
+        poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr, game, notemap)) if not  x.startswith('.') and x != 'notemap.txt']
+        print(f'\nWhat keybind would you like to use for {game}: {notemap}?')
+        keybind = list_options(poss_choices)
+
+    # We need to turn the user's input into the actual object
+    instr = instrument.Instrument(instr)
+    print(instr)
+
 
     # Set default values (will be changed if not using defaults)
-    channels = default_input_device.get('maxInputChannels')
-    rate = int(default_input_device.get('defaultSampleRate'))
+    device_idx = device_choices.index(input_device)
+    channels = input_device.get('maxInputChannels')
+    rate = int(input_device.get('defaultSampleRate'))
 
-    # We need to be able to identify the index of our desired input device
-    numdev = p.get_host_api_info_by_index(0).get('deviceCount')
-    for i in range(numdev):
-        current_device = p.get_device_info_by_host_api_device_index(0, i)
-
-        # If desired input device is found, use it
-        if current_device.get("name") == desired_input_device:
-            print("Device \"" + desired_input_device + "\" found.  Will use this device for inputting audio.")
-            rate = int(current_device.get('defaultSampleRate'))
-            channels = current_device.get('maxInputChannels')
-            desired_input_device_idx = i
-            found_device = True
-
-    # If desired input device is not found, inform user default input device has been selected
-    if not found_device:
-        print(desired_input_device + " not found.  Defaulting to " + default_input_device.get('name') + " for audio input.")
-
-    if found_device:
-        stream = p.open(format=FORMAT,channels=2,
-                        rate=rate,
-                        input_device_index=desired_input_device_idx,
-                        input=True,
-                        stream_callback=callback)
-    else:
-        stream = p.open(format=FORMAT,
-                        channels=channels,
-                        rate=rate,
-                        input=True,
-                        stream_callback=callback)
+    stream = p.open(format=FORMAT,channels=channels,
+                    rate=rate,
+                    input_device_index=device_idx,
+                    input=True,
+                    stream_callback=callback)
 
     unique_note_count = dict() # Dictionary to store unique notes and their occurences
 
@@ -150,7 +155,7 @@ if __name__ == "__main__":
             note_guess = max(unique_note_count, key=unique_note_count.get)
 
         print("Closest note to input: " + note_guess)
-
+        #key = 
         
 
         unique_note_count = dict() # Reset dictionary
