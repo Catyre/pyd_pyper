@@ -2,9 +2,7 @@
 import sys, os, glob, argparse, time
 
 # Pyd Pyper libraries
-import keybinds as kb
 import instrument
-import notemap as nm
 import audio_handler as ah
 
 def list_options(options):
@@ -25,9 +23,6 @@ def list_options(options):
 
 
 if __name__ == "__main__":
-    global unique_note_count
-    handler = ah.AudioHandler() # Instantiate audio handler
-
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Make keybinds for analog instruments.')
     parser.add_argument('-i', '--input', default=None, help='Set the desired input device.')
@@ -41,10 +36,11 @@ if __name__ == "__main__":
     input_device = args.input
     instr = args.instr
     game = args.game
-    notemap = args.notemap
+    notemap_num = int(args.notemap)
     keybind = args.keybind
 
     # TODO: Prompt user to make these files if none are found
+    handler = ah.AudioHandler() # Instantiate audio handler
     device_choices = handler.get_devices()
     if input_device is None:
         print('What input device would you like to use?')
@@ -57,20 +53,20 @@ if __name__ == "__main__":
         poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr)) if not  x.startswith('.')]
         print('\nWhat game would you like to use Pyd Pyper for?')
         game = list_options(poss_choices)
-    if notemap is None:
-        poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr, game)) if not  x.startswith('.')]
-        print(f'\nWhat notemap would you lke to use for {game}?')
-        notemap = list_options(poss_choices)
+    if notemap_num is None:
+        poss_choices = [x[:-1] for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr, game)) if not  x.startswith('.')]
+        print(f'\nWhat notemap would you lke to use for {game}  Use only the notemap\'s number?')
+        notemap_num = list_options(poss_choices)
     if keybind is None:
         poss_choices = [x for x in os.listdir(os.path.join(os.getcwd(), "instruments", instr, game, notemap)) if not  x.startswith('.') and x != 'notemap.txt']
         print(f'\nWhat keybind would you like to use for {game}: {notemap}?')
         keybind = list_options(poss_choices)
 
     # We need to turn the user's input into the actual object
-    instr = instrument.Instrument(instr, note_range=['D1', 'B2'])
-    notemap = instr.notemaps[game][notemap]
+    instr = instrument.Instrument(instr, game, note_range=['D1', 'B2'])
+    notemap = instr.notemaps[game][notemap_num-1]
     keybinds = notemap.keybinds[keybind]
-    device_idx = [i for i, device in enumerate(device_choices) if device.get('name') == input_device][0]
+    device_idx = [i for i, device in enumerate(device_choices) if device['name'] == input_device][0]
     input_device = device_choices[device_idx]
     unique_note_count = dict() # Dictionary to store unique notes and their occurences
 

@@ -1,8 +1,19 @@
 import numpy as np
-import pyaudio
 import time
-import librosa
+import aubio
+import sounddevice as sd
 
+
+# Initialize pitch detection
+buffsize = 2048
+hopsize = 1024
+pitch_o_L = aubio.pitch("default", buffsize, hopsize, 44100)
+pitch_o_R = aubio.pitch("default", buffsize, hopsize, 44100)
+pitch_o_L.set_unit("Hz")
+pitch_o_R.set_unit("Hz")
+pitch_o_L.set_silence(-40)  # Silence threshold in dB
+pitch_o_R.set_silence(-40)
+channels = 2 #Hard coded stereo output
 
 #Convert PCM signal to floating point with a range from -1 to 1. Use dtype='float32' for single precision.
 def pcm2float(sig, dtype='float32'):
@@ -24,34 +35,56 @@ def byte_to_float(byte):
     return pcm2float(np.frombuffer(byte,dtype=np.int16), dtype='float32')
 
 
+# Callback function to process audio in real time
+def callback(indata, frames, time, status):
+    if status:
+        print(status)
+    samples = np.frombuffer(indata, dtype=np.float32)
+
+    # Reshape interleaved stereo data into separate channels
+    samples = samples.reshape(-1, channels)  # Shape: (frames, 2)
+    samples /= np.max(np.abs(samples)) + 1e-10  # Normalize to [-1, 1]
+
+    left_channel = samples[:, 0]
+    right_channel = samples[:,1]
+
+    #print(samples)
+    pitch_L = pitch_o_L(left_channel[:hopsize])[0]
+    pitch_R = pitch_o_R(right_channel[:hopsize])[0]
+    #note = aubio.freq2note(pitch)
+    #if pitch:
+    print(f"Detected Pitch: ({pitch_L:.2f}, {pitch_R:.2f}) Hz")
+        #print(f"Detected note: {note}")
+
+
 class AudioHandler(object):
     def __init__(self):
-        self.p = pyaudio.PyAudio()
-        self.stream = None
         self.unique_note_count = {}
-        self.devices = [self.p.get_device_info_by_host_api_device_index(0, i) for i in range(self.p.get_host_api_info_by_index(0).get('deviceCount'))]
+        self.devices = sd.query_devices()
         self.tuning = 0
         self.initial_tune_check = False
+        self.running = False # On/off switch
+        self.CHUNK = 1024
+        self.HOPSIZE = 512
 
 
-    def start(self, device=None, format=pyaudio.paInt16, chunk=1024):
-        self.CHANNELS = device.get('maxInputChannels')
-        self.RATE = int(device.get('defaultSampleRate'))
-        self.CHUNK = chunk
-        self.FORMAT = format
+    def start(self, device=None):
+        self.running = True
 
-        self.stream = self.p.open(format=self.FORMAT,
-                                  channels=self.CHANNELS,
-                                  rate=self.RATE,
-                                  input=True,
-                                  output=False,
-                                  stream_callback=self.callback,
-                                  frames_per_buffer=self.CHUNK,
-                                  input_device_index=device.get('index'))
+        # Get maximum input channels and default sample rate
+        self.CHANNELS = device['max_input_channels']
+        self.RATE = int(device['default_samplerate'])
+        print(device['name'], self.CHANNELS, self.RATE)
+       # Open audio stream
+        with sd.InputStream(device=device['index'], callback=callback, channels=2, samplerate=44100, blocksize=hopsize):
+            print("Listening... Press Ctrl+C to stop.")
+            while self.running:
+                pass  # Keep the stream running
+ 
+
 
     def stop(self):
-        self.stream.close()
-        self.p.terminate()
+        self.running = False
 
 
     def get_devices(self):
@@ -59,7 +92,7 @@ class AudioHandler(object):
 
 
     def is_active(self):
-        return self.stream.is_active()
+        return self.running
 
 
     def use_instrument(self, instr):
@@ -69,12 +102,12 @@ class AudioHandler(object):
     def calibrate(self, audio):
         print("Calibration: Please play a single note and sustain it until calibration is complete.")
         time.sleep(2)
-        self.tuning = librosa.estimate_tuning(y=audio, sr=self.RATE)
+        self.tuning = librosa.pitch_tuning(y=audio, sr=self.RATE)
         print(f"Adjusting pitch by {self.tuning*100}% of a note\nCalibration complete.  Recording now...")
     
 
     # Cleaning the audio seems to fuck up the analysis; investigate further
-    def callback(self, in_data, frame_count, time_info, flag):
+    def callback_old(self, in_data, frame_count, time_info, flag):
         audio = byte_to_float(in_data) # Convert audio byte data to float data
 
         if not self.initial_tune_check:
