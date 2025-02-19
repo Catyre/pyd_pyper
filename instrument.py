@@ -12,16 +12,12 @@ class Instrument:
     def __init__(self, name, game, note_range=["A0", "C8"]):
         self.notemaps = {}
         self.name = name
-        self.path = os.path.join(
-            os.getcwd(), "instruments", name
-        )  # .../pyd_pyper/instruments/[name]
+        self.path = os.path.join(os.getcwd(), "instruments", name)  # .../pyd_pyper/instruments/[name]
         self.note_range = note_range
         self.game = game
 
         # Check the instrument's folder for existing notemaps and keybinds
-        self.games = [
-            x for x in os.listdir(self.path) if not x.startswith(".")
-        ]  # List of all games
+        self.games = [x for x in os.listdir(self.path) if not x.startswith(".")]  # List of all games
         if len(self.games) > 0:
             for poss_games in self.games:
                 if self.game == poss_games:

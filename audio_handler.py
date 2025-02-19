@@ -93,7 +93,7 @@ class AudioHandler(object):
                 print("Listening... Press Ctrl+C to stop.")
                 while self.running:
                     # Outputting keypresses needs to happen here (put the code in rat.py though)
-                    if self.note != latest_pitch
+                    if self.note != latest_pitch:
                         self.note_onset = time.time()
                         self.note = latest_pitch
                         note_history.append(self.note, self.note_onset)
@@ -103,7 +103,7 @@ class AudioHandler(object):
                 print("Listening... Press Ctrl+C to stop.")
                 while self.running:
                     # Outputting keypresses needs to happen here (put the code in rat.py though)
-                    if self.note != latest_pitch
+                    if self.note != latest_pitch:
                         self.note_onset = time.time()
                         self.note = latest_pitch
                         note_history.append(self.note, self.note_onset)
@@ -120,3 +120,6 @@ class AudioHandler(object):
 
     def is_active(self):
         return self.running
+
+    def use_instrument(self, instr):
+        self.instr = instr
