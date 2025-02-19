@@ -2,84 +2,111 @@ import numpy as np
 import time
 import aubio
 import sounddevice as sd
+from scipy.signal import butter, filtfilt
 
 
 # Initialize pitch detection
-buffsize = 2048
-hopsize = 1024
+buffsize = 4096
+hopsize = 2048
+tolerance = 0.8
+latest_pitch = None
+note_history = []
+
+# Initialize pitch detection for left and right channels (only use left in case of mono)
+#   TODO: Fix hardcoded sample rate
 pitch_o_L = aubio.pitch("default", buffsize, hopsize, 44100)
-pitch_o_R = aubio.pitch("default", buffsize, hopsize, 44100)
 pitch_o_L.set_unit("Hz")
-pitch_o_R.set_unit("Hz")
+pitch_o_L.set_tolerance(tolerance)
 pitch_o_L.set_silence(-40)  # Silence threshold in dB
+
+pitch_o_R = aubio.pitch("default", buffsize, hopsize, 44100)
+pitch_o_R.set_unit("Hz")
 pitch_o_R.set_silence(-40)
-channels = 2 #Hard coded stereo output
-
-#Convert PCM signal to floating point with a range from -1 to 1. Use dtype='float32' for single precision.
-def pcm2float(sig, dtype='float32'):
-    sig = np.asarray(sig)
-    if sig.dtype.kind not in 'iu':
-        raise TypeError("'sig' must be an array of integers")
-    dtype = np.dtype(dtype)
-    if dtype.kind != 'f':
-        raise TypeError("'dtype' must be a floating point type")
-
-    i = np.iinfo(sig.dtype)
-    abs_max = 2 ** (i.bits - 1)
-    offset = i.min + abs_max
-    return (sig.astype(dtype) - offset) / abs_max
+pitch_o_R.set_tolerance(tolerance)
 
 
-# byte -> int16(PCM_16) -> float32
-def byte_to_float(byte):
-    return pcm2float(np.frombuffer(byte,dtype=np.int16), dtype='float32')
+def callback_stereo(indata, frames, time, status):
+    global latest_pitch
 
-
-# Callback function to process audio in real time
-def callback(indata, frames, time, status):
     if status:
         print(status)
-    samples = np.frombuffer(indata, dtype=np.float32)
+    
+    indata /= np.max(np.abs(indata)) + 1e-10 # Normalize input
+    samples_L = np.array(indata[:, 0], dtype=np.float32).copy()  # Extract first channel & ensure writeable
+    samples_R = np.array(indata[:, 1], dtype=np.float32).copy()  # Do same for second
 
-    # Reshape interleaved stereo data into separate channels
-    samples = samples.reshape(-1, channels)  # Shape: (frames, 2)
-    samples /= np.max(np.abs(samples)) + 1e-10  # Normalize to [-1, 1]
+    # Ensure correct input size for aubio
+    if len(samples_L) >= hopsize and len(samples_R) >= hopsize:
+        # If so, run sample through pitch detection
+        pitch_L = pitch_o_L(samples_L[:hopsize])[0]
+        pitch_R = pitch_o_R(samples_R[:hopsize])[0]
 
-    left_channel = samples[:, 0]
-    right_channel = samples[:,1]
+        # Ignore unrealistic frequencies
+        if 20 < pitch_L < 1000 or 20 < pitch_R < 1000:
+            print(f"Detected Frequency (L, R): ({pitch_L:.2f}, {pitch_R:.2f}) Hz")
+            print(f"Note value: {aubio.freq2note(pitch_R)}")
+            # ^^^ For Debugging ^^^
 
-    #print(samples)
-    pitch_L = pitch_o_L(left_channel[:hopsize])[0]
-    pitch_R = pitch_o_R(right_channel[:hopsize])[0]
-    #note = aubio.freq2note(pitch)
-    #if pitch:
-    print(f"Detected Pitch: ({pitch_L:.2f}, {pitch_R:.2f}) Hz")
-        #print(f"Detected note: {note}")
+            latest_pitch = [pitch_L, pitch_R]
+
+
+def callback_mono(indata, frames, time, status):
+    global latest_pitch
+    if status:
+        print(status)
+    
+    indata /= np.max(np.abs(indata)) + 1e-10 # Normalize input
+    samples = np.array(indata[:, 0], dtype=np.float32).copy()  # Extract first channel & ensure writeable
+
+    # Ensure correct input size for aubio
+    if len(filtered_samples_L) >= hopsize and len(filtered_samples_R) >= hopsize:
+        pitch = pitch_o_L(samples[:hopsize])[0]
+
+        # Ignore unrealistic frequencies
+        if 20 < pitch < 1000:
+            print(f"Detected Frequency: {pitch_L:.2f} Hz") # For debugging
+            latest_pitch = pitch
 
 
 class AudioHandler(object):
     def __init__(self):
-        self.unique_note_count = {}
         self.devices = sd.query_devices()
-        self.tuning = 0
-        self.initial_tune_check = False
         self.running = False # On/off switch
         self.CHUNK = 1024
         self.HOPSIZE = 512
+        self.note = None
+        self.note_duration = None
+        self.note_onset = None
 
 
     def start(self, device=None):
+        global latest_pitch
         self.running = True
 
         # Get maximum input channels and default sample rate
         self.CHANNELS = device['max_input_channels']
         self.RATE = int(device['default_samplerate'])
-        print(device['name'], self.CHANNELS, self.RATE)
-       # Open audio stream
-        with sd.InputStream(device=device['index'], callback=callback, channels=2, samplerate=44100, blocksize=hopsize):
-            print("Listening... Press Ctrl+C to stop.")
-            while self.running:
-                pass  # Keep the stream running
+    
+        if self.CHANNELS == 1:
+            # Open audio stream
+            with sd.InputStream(device=device['index'], callback=callback_mono, channels=1, samplerate=self.RATE, blocksize=hopsize):
+                print("Listening... Press Ctrl+C to stop.")
+                while self.running:
+                    # Outputting keypresses needs to happen here (put the code in rat.py though)
+                    if self.note != latest_pitch
+                        self.note_onset = time.time()
+                        self.note = latest_pitch
+                        note_history.append(self.note, self.note_onset)
+
+        elif self.CHANNELS == 2:
+            with sd.InputStream(device=device['index'], callback=callback_stereo, channels=2, samplerate=self.RATE, blocksize=hopsize):
+                print("Listening... Press Ctrl+C to stop.")
+                while self.running:
+                    # Outputting keypresses needs to happen here (put the code in rat.py though)
+                    if self.note != latest_pitch
+                        self.note_onset = time.time()
+                        self.note = latest_pitch
+                        note_history.append(self.note, self.note_onset)
  
 
 
@@ -93,44 +120,3 @@ class AudioHandler(object):
 
     def is_active(self):
         return self.running
-
-
-    def use_instrument(self, instr):
-        self.instr = instr
-
-   
-    def calibrate(self, audio):
-        print("Calibration: Please play a single note and sustain it until calibration is complete.")
-        time.sleep(2)
-        self.tuning = librosa.pitch_tuning(y=audio, sr=self.RATE)
-        print(f"Adjusting pitch by {self.tuning*100}% of a note\nCalibration complete.  Recording now...")
-    
-
-    # Cleaning the audio seems to fuck up the analysis; investigate further
-    def callback_old(self, in_data, frame_count, time_info, flag):
-        audio = byte_to_float(in_data) # Convert audio byte data to float data
-
-        if not self.initial_tune_check:
-            self.calibrate(audio)
-            self.initial_tune_check = True
-
-        audio_corrected = librosa.effects.pitch_shift(y=audio, n_steps=self.tuning, sr=self.RATE)
-        pitches, _, _ = librosa.pyin(y=audio, n_thresholds=50, fill_na=0.0, frame_length=self.CHUNK, sr=self.RATE, fmin=librosa.note_to_hz(self.instr.note_range[0]), fmax=librosa.note_to_hz(self.instr.note_range[1]))
-        pitches = [pitch for pitch in pitches if pitch != 0.]
-        geo_mean = np.exp(np.mean(np.log(pitches)))
-
-        if not np.isnan(geo_mean):
-            #print(f"Pitches: {pitches}\nGeometric mean: {geo_mean}")
-            note = librosa.hz_to_note(geo_mean)
-
-            if self.unique_note_count.get(note) is None:
-                self.unique_note_count[note] = 1
-            else:
-                self.unique_note_count[note] += 1
-
-        return None, pyaudio.paContinue
-
-
-    def reset_unique_note_count(self):
-        self.unique_note_count = {}
-

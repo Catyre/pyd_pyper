@@ -8,7 +8,7 @@ import audio_handler as ah
 def list_options(options):
     selection = None
     choices = "\n"
-
+    
     if len(options) > 1:
         for idx, option in enumerate(options): choices += f"    {idx}. {option}\n"
         while selection not in range(len(options)):
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         keybind = list_options(poss_choices)
 
     # We need to turn the user's input into the actual object
-    instr = instrument.Instrument(instr, game, note_range=['D1', 'B2'])
+    instr = instrument.Instrument(instr, game, note_range=['B0', 'G3'])
     notemap = instr.notemaps[game][notemap_num-1]
     keybinds = notemap.keybinds[keybind]
     device_idx = [i for i, device in enumerate(device_choices) if device['name'] == input_device][0]
@@ -87,5 +87,4 @@ if __name__ == "__main__":
                 print(f"Note {note_guess} not found in notemap")
 
         handler.reset_unique_note_count()
-
     handler.stop()
