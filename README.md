@@ -38,8 +38,8 @@ In theory, **Pyd Pyper** is OS agnostic, though this has yet to be completely te
 | ------------------- | --------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | --input [input]     | -i        | Set the desired input device to [input].  <br>If omitted, use the computer's default device as input | Optional                                                                           |
 | --list              | -l        | List the available input devices at the time of running this program.                                | Optional. This flag will exit the program after printing the devices               |
-| --inst [instrument] | N/A       | Set the desired instrument to read keymaps from                                                      | Can have a user-defined default.  If there is a default set, this flag is optional |
-| --notemap [keymap]   | N/A       | Use [keymap] (found in <br>`.../pyd_pyper/instruments/[instrument]/notemaps/[notemap]`)                | Optional.  Keymaps can also have user-defined defaults per-instrument              |
+| --inst [instrument] | N/A       | Set the desired instrument to read notemaps from                                                      | Can have a user-defined default.  If there is a default set, this flag is optional |
+| --notemap [keymap]   | N/A       | Use [notemap] (found in <br>`.../pyd_pyper/instruments/[instrument]/notemaps/[notemap]`)                | Optional.  Keymaps can also have user-defined defaults per-instrument              |
 
 **Add the game, and keybind flags**
 
@@ -104,9 +104,9 @@ In general, all movement actions exclude all attack actions, and vice versa.  Me
 
 <hr>
 
-## Current keymaps
-#### Keymap config syntax:
-Keymaps are simply key:value pairs of a note and a desired action (**NOT** a keystroke).  Notes are notated in [Note][Octave] format, with a "#" as a sharp, and a "b" as a flat.  There should be no formatting in a keymap config aside from:
+## Current notemaps
+#### Notemap config syntax:
+notemaps are simply key:value pairs of a note and a desired action (**NOT** a keystroke).  Notes are notated in [Note][Octave] format, with a "#" as a sharp, and a "b" as a flat.  There should be no formatting in a notemap config aside from:
 
 ```
 ...
@@ -117,7 +117,7 @@ Db2:dash
 ```
 Eventually, I would like to add the ability to create custom actions for niche game environments, but for now a default set of actions should suffice.
 
-**NOTE:** A keymap can only work as expected if the keybinds set in the game mirror those set in **Pyd Paper**.  This cannot be done in the program, so you will need to make these adjustments yourself.
+**NOTE:** A notemap can only work as expected if the keybinds set in the game mirror those set in **Pyd Pyper**.  This cannot be done in the program, so you will need to make these adjustments yourself.
 
 #### Electric bass (prototype)
 
