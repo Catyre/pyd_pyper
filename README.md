@@ -1,9 +1,7 @@
 ## TODO List:
 - **pyd_pyper.py**
-	- FIX PITCH DETECTION
-	- Use dictionary of (supported) instrument ranges to set for YIN fmin fmax
 	- Add arguments to support more customization
-	- Add context-dependence to decrease keymap clutter
+	- Add context dependence to decrease keymap clutter
 - **keymaps.py**
 	- Make generic instrument keymaps for basic movement/attack
 	- Make the process of setting keybinds more user-friendly
@@ -17,11 +15,13 @@
 	- Make parser to read in instrument/keymap config files
 	- Add logging for future debugging
 	- Add subprogram to collect input data to analyze for best note-key matching
+ - **rat.py**
+	- Connect the desired inputs from a keybind to the received inputs from instrument (managed from audio_handler.py)
 
 <hr>
 
 ## Project Overview:
-**Pyd Pyper** (pronounced: Pied Piper) is a realtime pitch detection program that takes pitches input by an analog or digital instrument and converts them into keystrokes for use in manipulating a computer.  This program was built with Python 3.11.  Specifically, it is designed with gaming in mind, with the end goal being a fully implemented controller made from the user's instrument of choice and customized keymaps that dictate which note goes to which key(s).  The project is not quite (not at all) ready for release, but the people that are helping me test the program across OS's will need to be able to quickly pull files from the repo for testing, so this will be where that happens for now.
+**Pyd Pyper** (pronounced: Pied Piper) is a realtime pitch detection program that takes pitches input by an analog or digital instrument and converts them into keystrokes for use in manipulating a computer.  This program was built with Python 3.11.  Specifically, it is designed with gaming in mind, with the end goal being a fully implemented controller made from the user's instrument of choice and customized keymaps that dictate which note goes to which key(s).  The project is not quite ready for release, but the people that are helping me test the program across OS's will need to be able to quickly pull files from the repo for testing, so this will be where that happens for now.
 
 <hr>
 
@@ -39,7 +39,9 @@ In theory, **Pyd Pyper** is OS agnostic, though this has yet to be completely te
 | --input [input]     | -i        | Set the desired input device to [input].  <br>If omitted, use the computer's default device as input | Optional                                                                           |
 | --list              | -l        | List the available input devices at the time of running this program.                                | Optional. This flag will exit the program after printing the devices               |
 | --inst [instrument] | N/A       | Set the desired instrument to read keymaps from                                                      | Can have a user-defined default.  If there is a default set, this flag is optional |
-| --keymap [keymap]   | N/A       | Use [keymap] (found in <br>`.../pyd_pyper/instruments/[instrument]/keymaps/[keymap]`)                | Optional.  Keymaps can also have user-defined defaults per-instrument              |
+| --notemap [keymap]   | N/A       | Use [keymap] (found in <br>`.../pyd_pyper/instruments/[instrument]/notemaps/[notemap]`)                | Optional.  Keymaps can also have user-defined defaults per-instrument              |
+
+**Add the game, and keybind flags**
 
 There will be many more flags added for further customizability as time goes on.
 
@@ -49,14 +51,14 @@ There will be many more flags added for further customizability as time goes on.
 
 ## Project Ingredients:
 These are the third party python libraries that allow this project to happen:
-- [Pynput for keyboard manipulation](https://pypi.org/project/pynput/)
-- [Librosa for audio processing](https://pypi.org/project/librosa/)
-- [PyAudio for inputting realtime audio data](https://pypi.org/project/PyAudio/)
+- [aubio](https://aubio.org/) for real time pitch detection
+- [sounddevice](https://python-sounddevice.readthedocs.io/en/0.5.1/) to manage connected audio peripherals
 
 <hr>
 
 ## Considerations:
 - At least initially, the game to be tested with should have simple controls (I'm thinking Hollow Knight or Hades.  Minecraft may also be viable)
+- 3D games with a player-controlled camera are infeasible for now because the camera would need to be directed with the instrument
 - Eventually, there should be a streamlined method of associating notes with an arbitrary (user-decided) keyboard input
 - Should work regardless of timbre/tone.  That is, any instrument should be able to work with this program.
 - For presenting the final product, I need to be able to record through my screen and my webcam simultaneously so people can more clearly see how I'm playing the game through the bass.  Recording bass audio alongside game audio is already trivial in OBS
@@ -98,13 +100,13 @@ These are the typical actions of video games (at least, the ones that I play)
 <hr>
 
 ## Exclusions
-In general, all movement actions exclude all attack actions, and vice versa.  Meaning, movement and attack notes cannot be bound to the same string.  There are no exclusions for inventory/menu because these inputs generally only happen one at a time anyways.  ~~In the cases of games that do not disable movement in a menu, for simplicity we can just override the movement notes when in a  menu.  This has the effect of pausing movement without pausing gameplay, which may be annoying, but I'd rather work with this limitation than needing to bind separate keys.~~ <-- this is not a problem with context-dependence
+In general, all movement actions exclude all attack actions, and vice versa.  Meaning, movement and attack notes cannot be bound to the same string.  There are no exclusions for inventory/menu because these inputs generally only happen one at a time anyways.
 
 <hr>
 
 ## Current keymaps
 #### Keymap config syntax:
-Keymaps are simply key:value pairs of a note and a desired actrion (**NOT** a keystroke).  Notes are notated in [Note][Octave] format, with a "#" as a sharp, and a "b" as a flat.  There should be no formatting in a keymap config aside from:
+Keymaps are simply key:value pairs of a note and a desired action (**NOT** a keystroke).  Notes are notated in [Note][Octave] format, with a "#" as a sharp, and a "b" as a flat.  There should be no formatting in a keymap config aside from:
 
 ```
 ...
