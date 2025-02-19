@@ -1,8 +1,8 @@
 ## TODO List:
 - **pyd_pyper.py**
 	- Add arguments to support more customization
-	- Add context dependence to decrease keymap clutter
-- **keymaps.py**
+	- Add context dependence to decrease notemap clutter
+- **notemap.py**
 	- Make generic instrument keymaps for basic movement/attack
 	- Make the process of setting keybinds more user-friendly
 	- Make function to check that keymaps are valid (no duplicates, no accidental exclusions)
@@ -11,12 +11,12 @@
 	- Add option to save keymaps to file for later use.  These files should be selectable from the command line
 	- Add option to save keymap+instrument settings as a config to load immediately later
 	- Add defaults for other instruments
+- **rat.py**
+	- Connect the desired inputs from a keybind to the received inputs from instrument (managed from audio_handler.py)
 - **Other**:
 	- Make parser to read in instrument/keymap config files
 	- Add logging for future debugging
 	- Add subprogram to collect input data to analyze for best note-key matching
- - **rat.py**
-	- Connect the desired inputs from a keybind to the received inputs from instrument (managed from audio_handler.py)
 
 <hr>
 
