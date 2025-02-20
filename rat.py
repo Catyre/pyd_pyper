@@ -1,6 +1,10 @@
-# This file is for the listener in pyd_pyper.py.  It will hold at least one function to listen for note changes recorded from audio_handler.py 
-#   then generate a keypress in accordance with the notemap for a given game.
+# This file is for the listener in audio_handler.py.  It has its own file because it is the rat in the story of the pied piper that is moved
+#   by his music into action, much like how this function, rat, presses a key based on the music being played.
 import notemap as nm
+import pyautogui
 
-def rat():
+# Gather the notemap, keybind, and input, then perform the correct keypress
+def rat(notemap, keybind, note):
+    keypress = keybind[notemap[note]]
+    pyautogui.press(keypress)
     

@@ -1,11 +1,11 @@
 # FIVE-STRING BASS FRETBOARD LAYOUT (Standard tuning)
 # | 0   | 1    | 2    | 3    | 4    |
 # | --- | ---- | ---- | ---- | ---- |
-# | G2  | \#/b | A2   | \#/b | B2   |
-# | D2  | \#/b | E2   | F2   | \#/b |
-# | A1  | \#/b | B1   | C2   | \#/b |
-# | E1  | F1   | \#/b | G1   | \#/b |
-# | B0  | C1   | \#/b | D1   | \#/b |
+# | G2  | #/b | A2   | #/b | B2   |
+# | D2  | #/b | E2   | F2   | #/b |
+# | A1  | #/b | B1   | C2   | #/b |
+# | E1  | F1   | #/b | G1   | #/b |
+# | B0  | C1   | #/b | D1   | #/b |
 #
 # CURRENT NOTEMAPPING FOR BASS:
 # | 0              | 1                 | 2                | 3              |
@@ -26,9 +26,7 @@ import keybinds as kb
 
 class NoteMap:
     notemaps = []
-    range_error = ValueError(
-        "Variable 'note_range' must be a list of 2 notes in [Note][Octave] format between A0 and C8"
-    )
+    range_error = ValueError("Variable 'note_range' must be a list of 2 notes in [Note][Octave] format between A0 and C8")
 
     # If weird inputs start happening, double check this list for correct scale order
     # TODO: Add support for proper scales
@@ -46,8 +44,7 @@ class NoteMap:
                         "E6", "F6", "F#6", "G6", "G#6", "A6",
                         "A#6", "B6", "C7", "C#7", "D7", "D#7",
                         "E7", "F7", "F#7", "G7", "G#7", "A7",
-                        "A#7", "B7", "C8",
-    ]
+                        "A#7", "B7", "C8"]
 
     def edit_notemap(self) -> None:
         if platform.system() == "Darwin":  # macOS
